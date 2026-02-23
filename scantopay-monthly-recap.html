@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScanToPay Monthly Recap — ParkSwift</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1a;
+    --surface: #111827;
+    --surface2: #1a2333;
+    --border: #263147;
+    --accent: #00b4d8;
+    --accent-dim: rgba(0,180,216,0.1);
+    --accent2: #0077b6;
+    --green: #06d6a0;
+    --green-dim: rgba(6,214,160,0.1);
+    --yellow: #ffd166;
+    --yellow-dim: rgba(255,209,102,0.1);
+    --purple: #c77dff;
+    --purple-dim: rgba(199,125,255,0.1);
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --danger: #ef4444;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,180,216,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,180,216,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-mark {
+    width: 44px;
+    height: 44px;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 15px;
+    color: #000;
+    flex-shrink: 0;
+  }
+
+  .header-text p {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .header-text h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 2px;
+  }
+
+  .header-right {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .period-display {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .period-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 2px;
+  }
+
+  /* ── SECTION LABELS ── */
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+
+  /* ── FORM FIELDS ── */
+  .field-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 0;
+  }
+
+  .field-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .field-row-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  @media (max-width: 650px) {
+    .field-row, .field-row-2, .field-row-4 { grid-template-columns: 1fr 1fr; }
+  }
+
+  .field { display: flex; flex-direction: column; }
+
+  label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+
+  .input-wrap { position: relative; display: flex; align-items: center; }
+
+  .input-prefix, .input-suffix {
+    position: absolute;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .input-prefix { left: 11px; }
+  .input-suffix { right: 11px; }
+
+  input[type="text"],
+  input[type="number"],
+  select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+    appearance: none;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  input:focus, select:focus { border-color: var(--accent); }
+
+  .has-prefix input { padding-left: 26px; }
+  .has-suffix input { padding-right: 26px; }
+
+  .entity-color-tiba   { border-left: 3px solid var(--yellow); }
+  .entity-color-var    { border-left: 3px solid var(--green); }
+  .entity-color-owner  { border-left: 3px solid var(--purple); }
+
+  .entity-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .entity-dot {
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+  }
+
+  .entity-name-input {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px dashed var(--border) !important;
+    padding: 4px 0 !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: var(--text) !important;
+    width: 200px;
+  }
+
+  .entity-name-input:focus { border-bottom-color: var(--accent) !important; outline: none; }
+
+  /* ── ENTITY GRID ── */
+  .entity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 700px) { .entity-grid { grid-template-columns: 1fr; } }
+
+  .entity-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px 20px 22px;
+  }
+
+  /* ── RESULTS ── */
+  .results-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .results-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+
+  @media (max-width: 650px) { .summary-grid { grid-template-columns: repeat(2,1fr); } }
+
+  .summary-cell {
+    background: var(--bg);
+    padding: 18px 14px;
+    text-align: center;
+  }
+
+  .summary-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+
+  .summary-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  /* ── BREAKDOWN TABLE ── */
+  .breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .breakdown-table th {
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .breakdown-table th:not(:first-child) { text-align: right; }
+
+  .breakdown-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(38,49,71,0.6);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .breakdown-table td:not(:first-child) { text-align: right; }
+
+  .breakdown-table tr.total-row td {
+    border-top: 1px solid var(--border);
+    border-bottom: none;
+    font-weight: 600;
+    color: var(--text);
+    padding-top: 14px;
+  }
+
+  .breakdown-table tr.total-row td:first-child { color: var(--accent); }
+
+  .entity-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 500;
+  }
+
+  .entity-pip {
+    width: 8px;
+    height: 8px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .sep { height: 1px; background: var(--border); margin: 24px 0; }
+
+  /* ── PRINT BUTTON ── */
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    justify-content: flex-end;
+  }
+
+  .btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 10px 22px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .btn-primary:hover { background: #00cfff; }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    body {
+      background: #fff !important;
+      color: #111 !important;
+      padding: 20px !important;
+    }
+
+    body::before { display: none; }
+
+    .no-print { display: none !important; }
+
+    .container { max-width: 100%; }
+
+    header { border-bottom: 2px solid #000; }
+
+    .logo-mark { background: #000 !important; color: #fff !important; }
+
+    .header-text p, .period-label { color: #555 !important; }
+    .header-text h1, .period-display { color: #000 !important; }
+
+    .section-label { color: #000 !important; }
+    .section-label::before { background: #000 !important; }
+
+    .card, .entity-card, .results-card {
+      background: #fff !important;
+      border: 1px solid #ccc !important;
+      break-inside: avoid;
+    }
+
+    .results-card::after { display: none; }
+
+    input, select {
+      background: #f9f9f9 !important;
+      color: #111 !important;
+      border: 1px solid #ccc !important;
+    }
+
+    .summary-grid { background: #ccc !important; }
+    .summary-cell { background: #fff !important; }
+    .summary-label { color: #555 !important; }
+    .summary-value { color: #000 !important; }
+
+    .breakdown-table th { color: #555 !important; border-bottom: 1px solid #ccc !important; }
+    .breakdown-table td { border-bottom: 1px solid #eee !important; color: #111 !important; }
+    .breakdown-table tr.total-row td { border-top: 1px solid #ccc !important; color: #000 !important; }
+    .breakdown-table tr.total-row td:first-child { color: #000 !important; }
+
+    .entity-color-tiba, .entity-color-var, .entity-color-owner { border-left-color: #999 !important; }
+
+    .muted { color: #555 !important; }
+    label { color: #555 !important; }
+
+    .entity-name-input { color: #000 !important; border-bottom-color: #ccc !important; }
+
+    .actions { display: none !important; }
+
+    .print-footer {
+      display: block !important;
+      margin-top: 32px;
+      padding-top: 12px;
+      border-top: 1px solid #ccc;
+      font-size: 11px;
+      color: #888;
+      font-family: 'IBM Plex Mono', monospace;
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+
+  .print-footer { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-mark">PS</div>
+    <div class="header-text">
+      <p>ParkSwift — ScanToPay</p>
+      <h1>Monthly Recap</h1>
+    </div>
+    <div class="header-right">
+      <div class="period-display" id="period-display">—</div>
+      <div class="period-label">Reporting Period</div>
+    </div>
+  </header>
+
+  <!-- PERIOD & SHARED INPUTS -->
+  <div class="card no-print" style="margin-bottom:20px">
+    <div class="section-label">Reporting Period & Transaction Data</div>
+    <div class="field-row" style="grid-template-columns: 1fr 1fr 1fr; gap:16px">
+      <div class="field">
+        <label>Month</label>
+        <select id="sel-month" onchange="updatePeriod(); calculate()">
+          <option value="January">January</option>
+          <option value="February" selected>February</option>
+          <option value="March">March</option>
+          <option value="April">April</option>
+          <option value="May">May</option>
+          <option value="June">June</option>
+          <option value="July">July</option>
+          <option value="August">August</option>
+          <option value="September">September</option>
+          <option value="October">October</option>
+          <option value="November">November</option>
+          <option value="December">December</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Year</label>
+        <input type="number" id="inp-year" value="2026" min="2020" max="2099" oninput="updatePeriod(); calculate()">
+      </div>
+      <div class="field">
+        <label>Location / Site Name</label>
+        <input type="text" id="inp-site" placeholder="e.g. Downtown Garage" oninput="calculate()">
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="field-row-2">
+        <div class="field">
+          <label>Total # of Transactions</label>
+          <input type="number" id="inp-txn" value="" placeholder="0" min="0" oninput="calculate()">
+        </div>
+        <div class="field">
+          <label>Total Revenue</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">$</span>
+            <input type="number" id="inp-revenue" value="" placeholder="0.00" min="0" step="0.01" oninput="calculate()">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRINT-ONLY PERIOD/SITE HEADER -->
+  <div style="display:none" class="print-only-header" id="print-header">
+    <div style="display:flex; justify-content:space-between; margin-bottom:16px; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#555">
+      <span id="ph-site"></span>
+      <span id="ph-txn"></span>
+      <span id="ph-rev"></span>
+    </div>
+  </div>
+
+  <!-- CONVENIENCE FEE % ON REVENUE -->
+  <div class="card no-print" style="margin-bottom:20px">
+    <div class="section-label">Convenience Fee — % on Revenue Total</div>
+    <div class="field-row-2">
+      <div class="field">
+        <label>Convenience Fee %</label>
+        <div class="input-wrap has-suffix">
+          <input type="number" id="inp-fee-pct" value="3" min="0" step="0.25" oninput="calculate()">
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Calculated Fee on Revenue</label>
+        <div class="input-wrap has-prefix">
+          <span class="input-prefix">$</span>
+          <input type="text" id="out-rev-fee" readonly tabindex="-1" style="background:var(--accent-dim); border-color:var(--accent); color:var(--accent); font-weight:600" value="0.00">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENTITY FLAT FEES PER TRANSACTION -->
+  <div class="section-label" style="margin-bottom:12px">Entity Flat Fee — Per Transaction</div>
+  <div class="entity-grid">
+
+    <!-- TIBA -->
+    <div class="entity-card entity-color-tiba">
+      <div class="entity-header">
+        <div class="entity-dot" style="background:var(--yellow)"></div>
+        <input class="entity-name-input" type="text" id="name-tiba" value="TIBA" oninput="calculate()">
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label>Flat Fee per Transaction ($)</label>
+        <div class="input-wrap has-prefix">
+          <span class="input-prefix">$</span>
+          <input type="number" id="fee-tiba" value="0.10" min="0" step="0.01" oninput="calculate()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Fee Revenue This Month</label>
+        <div class="input-wrap has-prefix">
+          <span class="input-prefix">$</span>
+          <input type="text" id="out-tiba" readonly tabindex="-1" style="background:var(--yellow-dim); border-color:var(--yellow); color:var(--yellow); font-weight:600" value="0.00">
+        </div>
+      </div>
+    </div>
+
+    <!-- VAR -->
+    <div class="entity-card entity-color-var">
+      <div class="entity-header">
+        <div class="entity-dot" style="background:var(--green)"></div>
+        <input class="entity-name-input" type="text" id="name-var" value="VAR" oninput="calculate()">
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label>Flat Fee per Transaction ($)</label>
+        <div class="input-wrap has-prefix">
+          <span class="input-prefix">$</span>
+          <input type="number" id="fee-var" value="0.15" min="0" step="0.01" oninput="calculate()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Fee Revenue This Month</label>
+        <div class="input-wrap has-prefix">
+          <span class="input-prefix">$</span>
+          <input type="text" id="out-var" readonly tabindex="-1" style="background:var(--green-dim); border-color:var(--green); color:var(--green); font-weight:600" value="0.00">
+        </div>
+      </div>
+    </div>
+
+    <!-- OWNER/OPERATOR -->
+    <div class="entity-card entity-color-owner">
+      <div class="entity-header">
+        <div class="entity-dot" style="background:var(--purple)"></div>
+        <input class="entity-name-input" type="text" id="name-owner" value="Owner / Operator" oninput="calculate()">
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label>Flat Fee per Transaction ($)</label>
+        <div class="input-wrap has-prefix">
+          <span class="input-prefix">$</span>
+          <input type="number" id="fee-owner" value="0.05" min="0" step="0.01" oninput="calculate()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Fee Revenue This Month</label>
+        <div class="input-wrap has-prefix">
+          <span class="input-prefix">$</span>
+          <input type="text" id="out-owner" readonly tabindex="-1" style="background:var(--purple-dim); border-color:var(--purple); color:var(--purple); font-weight:600" value="0.00">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-card">
+    <div class="section-label">Monthly Summary</div>
+
+    <div class="summary-grid">
+      <div class="summary-cell">
+        <div class="summary-label">Total Transactions</div>
+        <div class="summary-value" id="s-txn" style="color:var(--text)">0</div>
+      </div>
+      <div class="summary-cell">
+        <div class="summary-label">Gross Revenue</div>
+        <div class="summary-value" id="s-rev" style="color:var(--text)">$0.00</div>
+      </div>
+      <div class="summary-cell">
+        <div class="summary-label">Conv. Fee on Revenue</div>
+        <div class="summary-value" id="s-rev-fee" style="color:var(--accent)">$0.00</div>
+      </div>
+      <div class="summary-cell">
+        <div class="summary-label">Total Entity Fees</div>
+        <div class="summary-value" id="s-entity-total" style="color:var(--green)">$0.00</div>
+      </div>
+    </div>
+
+    <div class="section-label">Entity Fee Breakdown</div>
+
+    <table class="breakdown-table">
+      <thead>
+        <tr>
+          <th>Entity</th>
+          <th>Flat Fee / Txn</th>
+          <th>Transactions</th>
+          <th>Fee Revenue</th>
+          <th>% of Total Fees</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="entity-badge"><span class="entity-pip" style="background:var(--yellow)"></span><span id="t-name-tiba">TIBA</span></span></td>
+          <td id="t-fee-tiba">$0.10</td>
+          <td id="t-txn-tiba">0</td>
+          <td id="t-rev-tiba" style="color:var(--yellow)">$0.00</td>
+          <td id="t-pct-tiba">—</td>
+        </tr>
+        <tr>
+          <td><span class="entity-badge"><span class="entity-pip" style="background:var(--green)"></span><span id="t-name-var">VAR</span></span></td>
+          <td id="t-fee-var">$0.15</td>
+          <td id="t-txn-var">0</td>
+          <td id="t-rev-var" style="color:var(--green)">$0.00</td>
+          <td id="t-pct-var">—</td>
+        </tr>
+        <tr>
+          <td><span class="entity-badge"><span class="entity-pip" style="background:var(--purple)"></span><span id="t-name-owner">Owner / Operator</span></span></td>
+          <td id="t-fee-owner">$0.05</td>
+          <td id="t-txn-owner">0</td>
+          <td id="t-rev-owner" style="color:var(--purple)">$0.00</td>
+          <td id="t-pct-owner">—</td>
+        </tr>
+        <tr class="total-row">
+          <td>Total Entity Fees</td>
+          <td>—</td>
+          <td id="t-txn-total">0</td>
+          <td id="t-rev-total" style="color:var(--green)">$0.00</td>
+          <td>100%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="sep"></div>
+
+    <div class="section-label">Convenience Fee on Revenue</div>
+    <table class="breakdown-table">
+      <thead>
+        <tr>
+          <th>Gross Revenue</th>
+          <th>Fee Rate</th>
+          <th>Convenience Fee</th>
+          <th>Revenue Net of Fee</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td id="b-gross">$0.00</td>
+          <td id="b-rate">3.00%</td>
+          <td id="b-fee" style="color:var(--accent)">$0.00</td>
+          <td id="b-net" style="color:var(--green)">$0.00</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="actions no-print">
+      <button class="btn btn-outline" onclick="clearAll()">Clear All</button>
+      <button class="btn btn-primary" onclick="window.print()">⊞ Print / Save PDF</button>
+    </div>
+  </div>
+
+  <div class="print-footer">
+    <span>ParkSwift — ScanToPay Monthly Recap</span>
+    <span id="pf-period"></span>
+    <span>Generated <span id="pf-date"></span></span>
+  </div>
+
+</div>
+
+<script>
+  function fmt(n) {
+    return '$' + (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function fmtInt(n) {
+    return (parseInt(n) || 0).toLocaleString('en-US');
+  }
+
+  function fmtPct(n) {
+    return (parseFloat(n) || 0).toFixed(1) + '%';
+  }
+
+  function set(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function setVal(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  }
+
+  function updatePeriod() {
+    const month = document.getElementById('sel-month').value;
+    const year = document.getElementById('inp-year').value;
+    const period = month + ' ' + year;
+    document.getElementById('period-display').textContent = period;
+    document.getElementById('pf-period').textContent = period;
+  }
+
+  function calculate() {
+    const txn      = parseInt(document.getElementById('inp-txn').value) || 0;
+    const revenue  = parseFloat(document.getElementById('inp-revenue').value) || 0;
+    const feePct   = parseFloat(document.getElementById('inp-fee-pct').value) || 0;
+
+    const feeTiba  = parseFloat(document.getElementById('fee-tiba').value) || 0;
+    const feeVar   = parseFloat(document.getElementById('fee-var').value) || 0;
+    const feeOwner = parseFloat(document.getElementById('fee-owner').value) || 0;
+
+    const nameTiba  = document.getElementById('name-tiba').value || 'TIBA';
+    const nameVar   = document.getElementById('name-var').value || 'VAR';
+    const nameOwner = document.getElementById('name-owner').value || 'Owner / Operator';
+
+    // Revenue convenience fee
+    const revFee = revenue * (feePct / 100);
+    const revNet = revenue - revFee;
+
+    // Entity flat fees
+    const tibaRev  = txn * feeTiba;
+    const varRev   = txn * feeVar;
+    const ownerRev = txn * feeOwner;
+    const entityTotal = tibaRev + varRev + ownerRev;
+
+    // % of entity total
+    const tibaPct  = entityTotal > 0 ? (tibaRev  / entityTotal * 100) : 0;
+    const varPct   = entityTotal > 0 ? (varRev   / entityTotal * 100) : 0;
+    const ownerPct = entityTotal > 0 ? (ownerRev / entityTotal * 100) : 0;
+
+    // Update entity output boxes
+    setVal('out-rev-fee', (revFee).toFixed(2));
+    setVal('out-tiba',  tibaRev.toFixed(2));
+    setVal('out-var',   varRev.toFixed(2));
+    setVal('out-owner', ownerRev.toFixed(2));
+
+    // Summary cells
+    set('s-txn',          fmtInt(txn));
+    set('s-rev',          fmt(revenue));
+    set('s-rev-fee',      fmt(revFee));
+    set('s-entity-total', fmt(entityTotal));
+
+    // Entity table
+    set('t-name-tiba',  nameTiba);
+    set('t-name-var',   nameVar);
+    set('t-name-owner', nameOwner);
+
+    set('t-fee-tiba',  fmt(feeTiba));
+    set('t-fee-var',   fmt(feeVar));
+    set('t-fee-owner', fmt(feeOwner));
+
+    set('t-txn-tiba',  fmtInt(txn));
+    set('t-txn-var',   fmtInt(txn));
+    set('t-txn-owner', fmtInt(txn));
+    set('t-txn-total', fmtInt(txn));
+
+    set('t-rev-tiba',  fmt(tibaRev));
+    set('t-rev-var',   fmt(varRev));
+    set('t-rev-owner', fmt(ownerRev));
+    set('t-rev-total', fmt(entityTotal));
+
+    set('t-pct-tiba',  entityTotal > 0 ? fmtPct(tibaPct)  : '—');
+    set('t-pct-var',   entityTotal > 0 ? fmtPct(varPct)   : '—');
+    set('t-pct-owner', entityTotal > 0 ? fmtPct(ownerPct) : '—');
+
+    // Revenue fee table
+    set('b-gross', fmt(revenue));
+    set('b-rate',  feePct.toFixed(2) + '%');
+    set('b-fee',   fmt(revFee));
+    set('b-net',   fmt(revNet));
+
+    // Print footer date
+    document.getElementById('pf-date').textContent = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+
+    // Print header
+    const site = document.getElementById('inp-site').value;
+    document.getElementById('ph-site').textContent = site ? 'Site: ' + site : '';
+    document.getElementById('ph-txn').textContent  = 'Transactions: ' + fmtInt(txn);
+    document.getElementById('ph-rev').textContent  = 'Revenue: ' + fmt(revenue);
+  }
+
+  function clearAll() {
+    document.getElementById('inp-txn').value = '';
+    document.getElementById('inp-revenue').value = '';
+    document.getElementById('inp-site').value = '';
+    calculate();
+  }
+
+  // Init
+  updatePeriod();
+  calculate();
+</script>
+</body>
+</html>
